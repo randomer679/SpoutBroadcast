@@ -1,0 +1,9 @@
+name: SpoutBroadcast
+main: me.randomer679.SpoutBroadcast.SpoutBroadcast
+version: 1.2
+softdepend: [Spout]
+commands:
+   sbroad:
+      description: The basic command to use SpoutBroadcast.
+      usage: /sbroad say message
+             /sbroad player [username] message
