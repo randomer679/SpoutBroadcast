@@ -1,5 +1,6 @@
 package me.randomer679.SpoutBroadcast.extra;
 
+import me.randomer679.SpoutBroadcast.SpoutBroadcast;
 import me.randomer679.SpoutBroadcast.SpoutFeatures;
 
 import org.bukkit.entity.Player;
@@ -9,11 +10,12 @@ import org.getspout.spoutapi.player.SpoutPlayer;
 
 public class SpoutBroadcastOkButton extends GenericButton{
 
-	private SpoutFeatures spoutFeatures = new SpoutFeatures();
+	private SpoutFeatures spoutFeatures;
 	
-	public SpoutBroadcastOkButton() {
+	public SpoutBroadcastOkButton(SpoutBroadcast spoutBroadcast) {
         super();
         setText("Ok");
+        this.spoutFeatures = spoutBroadcast.spoutFeatures;
     }
 	
 	public void onButtonClick(ButtonClickEvent event){

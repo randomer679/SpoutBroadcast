@@ -10,8 +10,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class Messages {
 	
-	private SpoutBroadcast spoutBroadcast = new SpoutBroadcast();
+	private SpoutBroadcast spoutBroadcast;
 	public FileConfiguration message;
+
+	public Messages(SpoutBroadcast spoutBroadcast) {
+		this.spoutBroadcast = spoutBroadcast;
+	}
 
 	public void messagesWrite(FileConfiguration messages, File messagesFile){
 		messages = new YamlConfiguration();

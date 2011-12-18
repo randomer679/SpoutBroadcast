@@ -16,7 +16,6 @@ import org.getspout.spoutapi.gui.Color;
 import org.getspout.spoutapi.gui.GenericButton;
 import org.getspout.spoutapi.gui.GenericLabel;
 import org.getspout.spoutapi.gui.GenericPopup;
-import org.getspout.spoutapi.gui.GenericTexture;
 import org.getspout.spoutapi.gui.Label;
 import org.getspout.spoutapi.gui.PopupScreen;
 import org.getspout.spoutapi.gui.WidgetAnchor;
@@ -29,7 +28,6 @@ public class SpoutFeatures {
 	private Map<SpoutPlayer, UUID> labelUuid = new HashMap<SpoutPlayer, UUID>();
 	private int messageNumber = 1;
 	private String messageNumberString = "";
-	private SpoutBroadcast spoutBroadcast = new SpoutBroadcast();
 	private Color globalColour;
 	private int r;
 	private int g;
@@ -38,13 +36,20 @@ public class SpoutFeatures {
 	private Runnable globalSchedule;
 	private Color colour;
 	private String colourPlayer;
-	private Messages messages = new Messages();
+	private Messages messages;
 	private Color defaultColour;
 	private String messageTemp;
 	private String colourSay;
 	private String message;
-	private Config config = new Config();
-	private Label senderLabel = new GenericLabel();
+	private Config config;
+	private SpoutBroadcast spoutBroadcast;
+	private GenericLabel senderLabel;
+
+	public SpoutFeatures(SpoutBroadcast spoutBroadcast) {
+		this.spoutBroadcast = spoutBroadcast;
+		this.messages = spoutBroadcast.messagesClass;
+		this.config = spoutBroadcast.configOptions;
+	}
 
 	public void globalOverride(String colour, Color color, String message,
 			Player[] playerList) {
@@ -58,24 +63,26 @@ public class SpoutFeatures {
 								config.globalDefaultBlue) / 255);
 			}
 		} else {
-			r = spoutBroadcast.config.getInt("colours." + colour + ".r", 0);
-			g = spoutBroadcast.config.getInt("colours." + colour + ".g", 0);
-			b = spoutBroadcast.config.getInt("colours." + colour + ".b", 0);
+			r = spoutBroadcast.getConfig().getInt("colours." + colour + ".r", 0);
+			g = spoutBroadcast.getConfig().getInt("colours." + colour + ".g", 0);
+			b = spoutBroadcast.getConfig().getInt("colours." + colour + ".b", 0);
 			globalColour = new Color(new Float(r) / 255, new Float(g) / 255,
 					new Float(b) / 255);
 		}
 		for (Player player : playerList) {
 			SpoutPlayer spoutPlayer = SpoutManager.getPlayer(player);
 			UUID labelID = labelUuid.get(spoutPlayer);
-			if (labelID != null) {
+			if (labelID != null && spoutPlayer.isSpoutCraftEnabled()) {
 				GenericLabel label = (GenericLabel) spoutPlayer.getMainScreen()
 						.getWidget(labelID);
 				label.setText(message).setTextColor(globalColour)
 						.setDirty(true);
+			} else {
+				player.sendMessage(message);
 			}
 		}
 		global = true;
-		globalSchedule = new GlobalSchedule();
+		globalSchedule = new GlobalSchedule(this);
 		spoutBroadcast.scheduler.scheduleAsyncDelayedTask(
 				spoutBroadcast.instance, globalSchedule,
 				config.globalInterval * 20);
@@ -129,23 +136,25 @@ public class SpoutFeatures {
 								config.playerDefaultBlue) / 255);
 			}
 		} else {
-			r = spoutBroadcast.config.getInt("colours." + colour + ".r", 0);
-			g = spoutBroadcast.config.getInt("colours." + colour + ".g", 0);
-			b = spoutBroadcast.config.getInt("colours." + colour + ".b", 0);
+			r = spoutBroadcast.getConfig().getInt("colours." + colour + ".r", 0);
+			g = spoutBroadcast.getConfig().getInt("colours." + colour + ".g", 0);
+			b = spoutBroadcast.getConfig().getInt("colours." + colour + ".b", 0);
 			playerColour = new Color(new Float(r) / 255, new Float(g) / 255,
 					new Float(b) / 255);
 		}
-			SpoutPlayer spoutPlayer = SpoutManager.getPlayer(player);
+		SpoutPlayer spoutPlayer = SpoutManager.getPlayer(player);
 		if (sender == null) {
+			senderLabel = new GenericLabel();
 			senderLabel.setText("Sent By "+senderName);
 			senderLabel.setX(2).setY(5).setAnchor(WidgetAnchor.CENTER_LEFT);
 		} else {
 			notifyMe.put(spoutPlayer, sender);
 		}
+		if(spoutPlayer.isSpoutCraftEnabled()){
 			Label label = new GenericLabel();
 			label.setText(message).setTextColor(playerColour);
 			label.setX(2).setY(0).setAnchor(WidgetAnchor.CENTER_LEFT);
-			GenericButton button = new SpoutBroadcastOkButton();
+			GenericButton button = new SpoutBroadcastOkButton(spoutBroadcast);
 			button.setColor(new Color(1.0F, 1.0F, 0, 1.0F));
 			button.setHoverColor(new Color(1.0F, 0, 0, 1.0F));
 			button.setX(50).setY(-20).setAnchor(WidgetAnchor.BOTTOM_LEFT);
@@ -155,6 +164,9 @@ public class SpoutFeatures {
 			popup.attachWidget(spoutBroadcast.instance, button);
 			popup.attachWidget(spoutBroadcast.instance, senderLabel);
 			spoutPlayer.getMainScreen().attachPopupScreen(popup);
+		} else {
+			player.sendMessage(message);
+		}
 	}
 
 	public void say(String arg1, String arg2, String[] args) {
@@ -193,7 +205,8 @@ public class SpoutFeatures {
 			if (!global) {
 				colour = new Color(
 						new Float(messages.message.getInt(messageNumberString
-								+ ".colour.r", config.broadcastDefaultRed)) / 255,
+								+ ".colour.r", 
+								config.broadcastDefaultRed)) / 255,
 						new Float(messages.message.getInt(messageNumberString
 								+ ".colour.g", config.broadcastDefaultGreen)) / 255,
 						new Float(messages.message.getInt(messageNumberString
@@ -210,6 +223,8 @@ public class SpoutFeatures {
 							label.setText(message).setTextColor(colour)
 									.setDirty(true);
 						}
+					} else {
+						player.sendMessage(message);
 					}
 				}
 			}

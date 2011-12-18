@@ -3,8 +3,9 @@ package me.randomer679.SpoutBroadcast.Config;
 import java.io.File;
 import java.io.IOException;
 
+import me.randomer679.SpoutBroadcast.SpoutBroadcast;
+
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 public class Config {
 
@@ -22,9 +23,14 @@ public class Config {
 	public int labelLocationX;
 	public int labelLocationY;
 	public boolean useDefaultLocation;
+	private SpoutBroadcast spoutBroadcast;
 	
-	public void makeConfig(FileConfiguration config, File configFile){
-		config = new YamlConfiguration();
+	public Config(SpoutBroadcast spoutBroadcast) {
+		this.spoutBroadcast = spoutBroadcast;
+	}
+
+	public void makeConfig(File configFile){
+		FileConfiguration config = spoutBroadcast.getConfig();
 		config.set("useDefaultLabelLocation", false);
 		config.set("labelLocation.x", 5);
 		config.set("labelLocation.y", 5);
@@ -50,11 +56,11 @@ public class Config {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		loadConfig(config, configFile);
+		loadConfig(configFile);
 	}
 	
-	public void loadConfig(FileConfiguration config, File configFile){
-		config = YamlConfiguration.loadConfiguration(configFile);
+	public void loadConfig(File configFile){
+		FileConfiguration config = spoutBroadcast.getConfig();
 		useDefaultLocation = config.getBoolean("useDefaultLabelLocation", false);
 		labelLocationX = config.getInt("labelLocation.x", 5);
 		labelLocationY = config.getInt("labelLocation,y", 5);

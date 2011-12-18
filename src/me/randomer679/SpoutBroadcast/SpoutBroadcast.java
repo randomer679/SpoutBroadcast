@@ -18,22 +18,22 @@ import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.getspout.spoutapi.gui.Color;
 
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 public class SpoutBroadcast extends JavaPlugin {
 
-	private SpoutFeatures spoutFeatures = new SpoutFeatures();
-	private SpoutBroadcastSpoutListener spoutListener = new SpoutBroadcastSpoutListener();
-	private BroadcastSchedule broadcastSchedule = new BroadcastSchedule();
+	public Messages messagesClass = new Messages(this);
+	public Config configOptions = new Config(this);
+	public SpoutFeatures spoutFeatures = new SpoutFeatures(this);
+	private SpoutBroadcastSpoutListener spoutListener = new SpoutBroadcastSpoutListener(this);
+	private BroadcastSchedule broadcastSchedule = new BroadcastSchedule(this);
 	private FileConfiguration messages;
 	private PluginManager pm;
 	private PermissionManager permissions = null;
-	private Messages messagesClass = new Messages();
-	private Config configOptions = new Config();
 	private Errors errors = new Errors();
-	public FileConfiguration config;
 	public BukkitScheduler scheduler;
 	public Logger log = Logger.getLogger("SpoutBroadcast");
 	public SpoutBroadcast instance;
@@ -120,10 +120,10 @@ public class SpoutBroadcast extends JavaPlugin {
 		log.info(prefix + "Attempting to load config.");
 		if (!configFile.exists()) {
 			log.info(prefix + "Config file not found, creating one now.");
-			configOptions.makeConfig(config, configFile);
+			configOptions.makeConfig(configFile);
 			log.info(prefix + "Config file created.");
 		} else if (configFile.exists()) {
-			configOptions.loadConfig(config, configFile);
+			configOptions.loadConfig(configFile);
 			log.info(prefix + "Config loaded.");
 		}
 		log.info(prefix + "Attempting to load messages.");
@@ -152,4 +152,31 @@ public class SpoutBroadcast extends JavaPlugin {
 			permissions = PermissionsEx.getPermissionManager();
 		}
 	}
+	
+	/**
+	 * Broadcasts a message to all the players on the server. All params required. 
+	 * @param message The message that is to be displayed.
+	 * @param red A number between 0 and 255. Sets the amount of red in the broadcast colour.
+	 * @param green A number between 0 and 255. Sets the amount of green in the broadcast colour.
+	 * @param blue A number between 0 and 255. Sets the amount of blue in the broadcast colour.
+	 */
+	public void globalBroadcast(String message, int red, int green, int blue){
+		Player[] playerList = this.getServer().getOnlinePlayers();
+		Color colour = new Color(new Float(red) / 255, new Float(green) / 255, new Float(blue) / 255);
+		spoutFeatures.globalOverride("none", colour, message, playerList);
+	}
+	
+	/**
+	 * Creates a pop-up on the players screen with the message and the senderName. All params required.
+	 * @param player The player who will receive the message.
+	 * @param message The message to be sent
+	 * @param senderName The name to be displayed as the sender. Preferably your plugin name.
+	 * @param red A number between 0 and 255. Sets the amount of red in the broadcast colour.
+	 * @param green A number between 0 and 255. Sets the amount of green in the broadcast colour.
+	 * @param blue A number between 0 and 255. Sets the amount of blue in the broadcast colour.
+	 */
+	public void playerBroadcast(Player player, String message, String senderName, int red, int green, int blue){
+		Color colour = new Color(new Float(red) / 255, new Float(green) / 255, new Float(blue) / 255);
+		spoutFeatures.playerOverride("none", message, player, null, senderName, colour);
+	}	
 }
