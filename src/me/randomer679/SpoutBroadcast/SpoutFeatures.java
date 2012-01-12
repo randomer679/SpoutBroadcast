@@ -44,6 +44,8 @@ public class SpoutFeatures {
 	private Config config;
 	private SpoutBroadcast spoutBroadcast;
 	private GenericLabel senderLabel;
+	private String currentMessage = null;
+	private Color currentColour = null;
 
 	public SpoutFeatures(SpoutBroadcast spoutBroadcast) {
 		this.spoutBroadcast = spoutBroadcast;
@@ -82,6 +84,8 @@ public class SpoutFeatures {
 			}
 		}
 		global = true;
+		currentColour  = globalColour;
+		currentMessage = message;
 		globalSchedule = new GlobalSchedule(this);
 		spoutBroadcast.scheduler.scheduleAsyncDelayedTask(
 				spoutBroadcast.instance, globalSchedule,
@@ -229,6 +233,8 @@ public class SpoutFeatures {
 				}
 			}
 		}
+		currentMessage = message;
+		currentColour = colour;
 		messageNumber++;
 	}
 
@@ -242,11 +248,20 @@ public class SpoutFeatures {
 			locationY = config.labelLocationY;
 			locationX = config.labelLocationX;
 		}
-		label.setY(locationY).setX(locationX).setAnchor(WidgetAnchor.TOP_LEFT);
-		defaultColour = new Color(new Float(config.broadcastDefaultRed) / 255,
+		label.setHeight(5).setWidth(300).setY(locationY).setX(locationX).setAnchor(WidgetAnchor.TOP_LEFT);
+		if(defaultColour == null){
+			defaultColour = new Color(new Float(config.broadcastDefaultRed) / 255,
 				new Float(config.broadcastDefaultGreen) / 255, new Float(
 						config.broadcastDefaultBlue) / 255);
-		label.setTextColor(defaultColour);
+		}
+		if(currentMessage != null){
+			label.setText(currentMessage);
+		}
+		if(currentColour != null){
+			label.setTextColor(currentColour);
+		} else {
+			label.setTextColor(defaultColour);
+		}
 		spoutPlayer.getMainScreen()
 				.attachWidget(spoutBroadcast.instance, label);
 	}
