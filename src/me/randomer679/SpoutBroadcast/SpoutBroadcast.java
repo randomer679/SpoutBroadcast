@@ -8,6 +8,7 @@ import me.randomer679.SpoutBroadcast.Config.Messages;
 import me.randomer679.SpoutBroadcast.Listeners.SpoutBroadcastSpoutListener;
 import me.randomer679.SpoutBroadcast.extra.Errors;
 import me.randomer679.SpoutBroadcast.schedules.BroadcastSchedule;
+import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,12 +17,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.getspout.spoutapi.gui.Color;
-
-import ru.tehkode.permissions.PermissionManager;
-import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 public class SpoutBroadcast extends JavaPlugin {
 
@@ -32,13 +31,13 @@ public class SpoutBroadcast extends JavaPlugin {
 	private BroadcastSchedule broadcastSchedule = new BroadcastSchedule(this);
 	private FileConfiguration messages;
 	private PluginManager pm;
-	private PermissionManager permissions = null;
 	private Errors errors = new Errors();
 	public BukkitScheduler scheduler;
 	public Logger log = Logger.getLogger("SpoutBroadcast");
 	public SpoutBroadcast instance;
 	public String prefix = "Spoutbroadcast - ";
 	public File folder;
+	private Permission permissions;
 
 	public SpoutBroadcast() {
 		this.instance = this;
@@ -46,56 +45,31 @@ public class SpoutBroadcast extends JavaPlugin {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd,
-			String commandLabel, String[] args) {
+		String commandLabel, String[] args) {
 		Player playerTemp = (Player) sender;
-		if(permissions == null && !playerTemp.isOp()){
-			errors.error(1);
-			return true;
-		}else if(permissions != null || playerTemp.isOp()){
 		if (args.length < 2) {
-				String error = errors.error(0);
-				sender.sendMessage(error);
-				return false;
-			}
-			String arg1 = args[0];
-			String arg2 = args[1];
-			if(arg1.equalsIgnoreCase("say")){
-				if(permissions != null){
-					if(permissions.has(playerTemp, "spoutbroadcast.say") || playerTemp.isOp()){
-						spoutFeatures.say(arg1, arg2, args);
-					}else{
-						errors.error(1);
-						return true;
-					}
-				}else{
-					if(playerTemp.isOp()){
-						spoutFeatures.say(arg1, arg2, args);
-						return true;
-					}else{
-						errors.error(1);
-						return true;
-					}
-				}
-			}else if(arg1.equalsIgnoreCase("player")){
-				if(permissions != null){
-					if(permissions.has(playerTemp, "spoutbroadcast.player") || playerTemp.isOp()){
-						spoutFeatures.player(arg1, arg2, args, sender);
-						return true;
-					}else{
-						errors.error(1);
-						return true;
-					}
-				}else{
-					if(playerTemp.isOp()){
-						spoutFeatures.player(arg1, arg2, args, sender);
-						return true;
-					}else{
-						errors.error(1);
-						return true;
-					}
-				}
-			}	
+			String error = errors.error(0);
+			sender.sendMessage(error);
+			return false;
 		}
+		String arg1 = args[0];
+		String arg2 = args[1];
+		if(arg1.equalsIgnoreCase("say")){
+			if(permissions.has(sender, "spoutbroadcast.say") || playerTemp.isOp()){
+				spoutFeatures.say(arg1, arg2, args);
+			}else{
+				errors.error(1);
+				return true;
+			}
+		}else if(arg1.equalsIgnoreCase("player")){
+			if(permissions.has(sender, "spoutbroadcast.player") || playerTemp.isOp()){
+				spoutFeatures.player(arg1, arg2, args, sender);
+				return true;
+			}else{
+				errors.error(1);
+				return true;
+			}
+		}	
 		return true;
 	}
 	
@@ -135,10 +109,7 @@ public class SpoutBroadcast extends JavaPlugin {
 			messagesClass.messagesLoad(messages, messagesFile);
 			log.info(prefix + "Messages loaded.");
 		}
-		log.info(prefix+"Checking whether to use permissions.");
-		if(this.getServer().getPluginManager().isPluginEnabled("PermissionsEx")){
-			permissions = PermissionsEx.getPermissionManager();
-		}
+		setupPerms();
 		log.info(prefix + "Registering Events.");
 		pm.registerEvent(Type.CUSTOM_EVENT, spoutListener, Priority.Monitor,
 				this);
@@ -148,9 +119,11 @@ public class SpoutBroadcast extends JavaPlugin {
 				configOptions.broadcastInterval * 20);
 		log.info("SpoutBroadcast " + getDescription().getVersion()
 				+ " Is Enabled.");
-		if (getServer().getPluginManager().isPluginEnabled("PermissionsEx")) {
-			permissions = PermissionsEx.getPermissionManager();
-		}
+	}
+	
+	private void setupPerms(){
+		RegisteredServiceProvider<Permission> rsp = this.getServer().getServicesManager().getRegistration(Permission.class);
+		permissions = rsp.getProvider();
 	}
 	
 	/**

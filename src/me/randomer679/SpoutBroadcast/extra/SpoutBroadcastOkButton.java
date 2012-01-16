@@ -14,7 +14,7 @@ public class SpoutBroadcastOkButton extends GenericButton{
 	
 	public SpoutBroadcastOkButton(SpoutBroadcast spoutBroadcast) {
         super();
-        setText("Ok");
+        setText("Close");
         this.spoutFeatures = spoutBroadcast.spoutFeatures;
     }
 	

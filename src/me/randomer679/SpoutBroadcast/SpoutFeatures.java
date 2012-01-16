@@ -23,8 +23,8 @@ import org.getspout.spoutapi.player.SpoutPlayer;
 
 public class SpoutFeatures {
 
-	public Map<SpoutPlayer, Player> notifyMe = new HashMap<SpoutPlayer, Player>();
 	public volatile boolean global;
+	public Map<SpoutPlayer, Player> notifyMe = new HashMap<SpoutPlayer, Player>();
 	private Map<SpoutPlayer, UUID> labelUuid = new HashMap<SpoutPlayer, UUID>();
 	private int messageNumber = 1;
 	private String messageNumberString = "";
@@ -130,6 +130,13 @@ public class SpoutFeatures {
 
 	public void playerOverride(String colour, String message, Player player,
 			Player sender, String senderName, Color color) {
+		SpoutPlayer spoutPlayer = SpoutManager.getPlayer(player);
+		if(notifyMe.containsKey(spoutPlayer)){
+			if(sender != null){
+				sender.sendMessage("SBroad - That player already has a popup.");
+			}
+			return;
+		}
 		if (colour.equalsIgnoreCase("none")) {
 			if (color != null) {
 				playerColour = color;
@@ -146,7 +153,6 @@ public class SpoutFeatures {
 			playerColour = new Color(new Float(r) / 255, new Float(g) / 255,
 					new Float(b) / 255);
 		}
-		SpoutPlayer spoutPlayer = SpoutManager.getPlayer(player);
 		if (sender == null) {
 			senderLabel = new GenericLabel();
 			senderLabel.setText("Sent By "+senderName);
@@ -169,7 +175,11 @@ public class SpoutFeatures {
 			popup.attachWidget(spoutBroadcast.instance, senderLabel);
 			spoutPlayer.getMainScreen().attachPopupScreen(popup);
 		} else {
-			player.sendMessage(message);
+			player.sendMessage(sender.getName()+" said: "+message);
+			if(notifyMe.containsKey(spoutPlayer)){
+				sender.sendMessage("SBroad - You will not be notified as the player does not have Spoutcraft.");
+				notifyMe.remove(spoutPlayer);
+			}
 		}
 	}
 
@@ -201,6 +211,7 @@ public class SpoutFeatures {
 		messageNumberString = Integer.toString(messageNumber).trim();
 		String message = messages.message.getString(messageNumberString
 				+ ".message");
+		String messageAlt = messages.message.getString(messageNumberString+".messageAlt");
 		if (message == null) {
 			messageNumber = 1;
 			scheduledBroadcasts();
@@ -228,7 +239,7 @@ public class SpoutFeatures {
 									.setDirty(true);
 						}
 					} else {
-						player.sendMessage(message);
+						player.sendMessage(messageAlt);
 					}
 				}
 			}
