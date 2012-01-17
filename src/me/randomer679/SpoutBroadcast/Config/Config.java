@@ -63,7 +63,7 @@ public class Config {
 		FileConfiguration config = spoutBroadcast.getConfig();
 		useDefaultLocation = config.getBoolean("useDefaultLabelLocation", false);
 		labelLocationX = config.getInt("labelLocation.x", 5);
-		labelLocationY = config.getInt("labelLocation,y", 5);
+		labelLocationY = config.getInt("labelLocation.y", 5);
 		broadcastInterval = config.getInt("broadcast.interval", 60);
 		broadcastDefaultRed = config.getInt("broadcast.defaultColour.red", 0);
 		broadcastDefaultGreen = config.getInt("broadcast.defaultColour.green", 0);
