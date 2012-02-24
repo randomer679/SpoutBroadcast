@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import me.randomer679.SpoutBroadcast.Config.Config;
 import me.randomer679.SpoutBroadcast.Config.Messages;
-import me.randomer679.SpoutBroadcast.Listeners.SpoutBroadcastSpoutListener;
+import me.randomer679.SpoutBroadcast.Listeners.SpoutBroadcastListener;
 import me.randomer679.SpoutBroadcast.extra.Errors;
 import me.randomer679.SpoutBroadcast.schedules.BroadcastSchedule;
 import net.milkbowl.vault.permission.Permission;
@@ -14,8 +14,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,7 +25,7 @@ public class SpoutBroadcast extends JavaPlugin {
 	public Messages messagesClass = new Messages(this);
 	public Config configOptions = new Config(this);
 	public SpoutFeatures spoutFeatures = new SpoutFeatures(this);
-	private SpoutBroadcastSpoutListener spoutListener = new SpoutBroadcastSpoutListener(this);
+	private SpoutBroadcastListener spoutListener = new SpoutBroadcastListener(this);
 	private BroadcastSchedule broadcastSchedule = new BroadcastSchedule(this);
 	private FileConfiguration messages;
 	private PluginManager pm;
@@ -111,9 +109,7 @@ public class SpoutBroadcast extends JavaPlugin {
 		}
 		setupPerms();
 		log.info(prefix + "Registering Events.");
-		pm.registerEvent(Type.CUSTOM_EVENT, spoutListener, Priority.Monitor,
-				this);
-
+		pm.registerEvents(spoutListener, this);
 		scheduler = getServer().getScheduler();
 		scheduler.scheduleAsyncRepeatingTask(this, broadcastSchedule, 20,
 				configOptions.broadcastInterval * 20);
